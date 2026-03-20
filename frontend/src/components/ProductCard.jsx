@@ -1,60 +1,121 @@
+import { useState } from 'react'
 import { useCart } from '../context/CartContext'
 
 const ProductCard = ({ product }) => {
   const { addItem } = useCart()
+  const [added, setAdded] = useState(false)
 
   const formatPrice = (price) =>
     Number(price).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
 
+  const handleAdd = () => {
+    addItem(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
+  }
+
   return (
-    <div style={styles.card}>
-      <div style={styles.img}>
+    <div style={s.card}>
+      <div style={s.img}>
         {product.image
           ? <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <span style={styles.imgPlaceholder}>Sin imagen</span>
+          : (
+            <div style={s.imgPlaceholder}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+          )
         }
+        {product.stock <= 5 && product.stock > 0 && (
+          <div style={s.lowStock}>Últimas {product.stock}</div>
+        )}
+        {product.stock === 0 && (
+          <div style={s.noStock}>Sin stock</div>
+        )}
       </div>
-      <div style={styles.body}>
-        <h3 style={styles.name}>{product.name}</h3>
-        <p style={styles.desc}>{product.description}</p>
-        <div style={styles.footer}>
-          <span style={styles.price}>{formatPrice(product.price)}</span>
-          <span style={styles.stock}>Stock: {product.stock}</span>
+
+      <div style={s.body}>
+        <p style={s.name}>{product.name}</p>
+        {product.description && <p style={s.desc}>{product.description}</p>}
+
+        <div style={s.footer}>
+          <span style={s.price}>{formatPrice(product.price)}</span>
+          <button
+            onClick={handleAdd}
+            disabled={product.stock === 0}
+            style={{
+              ...s.btn,
+              ...(product.stock === 0 ? s.btnDisabled : {}),
+              ...(added ? s.btnAdded : {}),
+            }}
+          >
+            {added ? (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Agregado
+              </>
+            ) : (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Agregar
+              </>
+            )}
+          </button>
         </div>
-        <button
-          onClick={() => addItem(product)}
-          disabled={product.stock === 0}
-          style={{ ...styles.btn, ...(product.stock === 0 ? styles.btnDisabled : {}) }}
-        >
-          {product.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
-        </button>
       </div>
     </div>
   )
 }
 
-const styles = {
+const s = {
   card: {
-    background: '#1e293b', borderRadius: '10px', overflow: 'hidden',
-    border: '1px solid #334155', display: 'flex', flexDirection: 'column',
+    background: '#0d1117',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: '14px', overflow: 'hidden',
+    display: 'flex', flexDirection: 'column',
+    transition: 'border-color 0.2s, transform 0.2s',
   },
   img: {
-    height: '160px', background: '#0f172a',
+    height: '170px', background: '#111820', position: 'relative',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  imgPlaceholder: { color: '#475569', fontSize: '0.85rem' },
-  body: { padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 },
-  name: { color: '#f1f5f9', fontWeight: '600', fontSize: '1rem', margin: 0 },
-  desc: { color: '#64748b', fontSize: '0.85rem', margin: 0, flex: 1 },
-  footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  price: { color: '#3b82f6', fontWeight: '700', fontSize: '1.1rem' },
-  stock: { color: '#64748b', fontSize: '0.8rem' },
-  btn: {
-    background: '#3b82f6', color: '#fff', border: 'none',
-    padding: '8px', borderRadius: '6px', cursor: 'pointer',
-    fontWeight: '500', fontSize: '0.9rem', width: '100%',
+  imgPlaceholder: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' },
+  lowStock: {
+    position: 'absolute', top: '10px', right: '10px',
+    background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)',
+    color: '#f59e0b', borderRadius: '6px', padding: '3px 8px', fontSize: '0.72rem', fontWeight: '600',
   },
-  btnDisabled: { background: '#334155', color: '#475569', cursor: 'not-allowed' },
+  noStock: {
+    position: 'absolute', inset: 0,
+    background: 'rgba(8,12,18,0.7)', backdropFilter: 'blur(4px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: '#4a5568', fontSize: '0.85rem', fontWeight: '500',
+  },
+  body: { padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 },
+  name: { color: '#f0f4ff', fontWeight: '600', fontSize: '0.92rem', margin: 0, letterSpacing: '-0.01em' },
+  desc: { color: '#4a5568', fontSize: '0.8rem', margin: 0, lineHeight: 1.5, flex: 1 },
+  footer: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem' },
+  price: { color: '#f0f4ff', fontWeight: '700', fontSize: '1rem', fontFamily: 'var(--mono, monospace)', letterSpacing: '-0.02em' },
+  btn: {
+    display: 'inline-flex', alignItems: 'center', gap: '5px',
+    background: 'rgba(47,128,255,0.1)', border: '1px solid rgba(47,128,255,0.25)',
+    color: '#2f80ff', padding: '6px 12px', borderRadius: '7px',
+    fontSize: '0.8rem', fontWeight: '600', transition: 'all 0.2s',
+  },
+  btnDisabled: {
+    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+    color: '#4a5568', cursor: 'not-allowed',
+  },
+  btnAdded: {
+    background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)',
+    color: '#10b981',
+  },
 }
 
 export default ProductCard

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 
@@ -6,66 +6,136 @@ const Navbar = () => {
   const { user, logout } = useAuth()
   const { count } = useCart()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+  const handleLogout = () => { logout(); navigate('/login') }
+
+  const isActive = (path) => location.pathname === path
 
   return (
-    <nav style={styles.nav}>
-      <Link to="/" style={styles.logo}>ShopAPI</Link>
+    <nav style={s.nav}>
+      <div style={s.inner}>
+        <Link to="/" style={s.logo}>
+          <span style={s.logoDot} />
+          ShopAPI
+        </Link>
 
-      <div style={styles.links}>
-        <Link to="/products" style={styles.link}>Productos</Link>
-
-        {user ? (
-          <>
-            <Link to="/cart" style={styles.link}>
-              Carrito {count > 0 && <span style={styles.badge}>{count}</span>}
+        <div style={s.center}>
+          <Link to="/products" style={{ ...s.navLink, ...(isActive('/products') ? s.navLinkActive : {}) }}>
+            Productos
+          </Link>
+          {user && (
+            <Link to="/orders" style={{ ...s.navLink, ...(isActive('/orders') ? s.navLinkActive : {}) }}>
+              Órdenes
             </Link>
-            <Link to="/orders" style={styles.link}>Mis órdenes</Link>
-            {user.role === 'ADMIN' && (
-              <Link to="/admin" style={{ ...styles.link, color: '#f59e0b' }}>Admin</Link>
-            )}
-            <span style={styles.userName}>{user.name}</span>
-            <button onClick={handleLogout} style={styles.btn}>Salir</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" style={styles.link}>Iniciar sesión</Link>
-            <Link to="/register" style={{ ...styles.link, ...styles.btnPrimary }}>Registrarse</Link>
-          </>
-        )}
+          )}
+          {user?.role === 'ADMIN' && (
+            <Link to="/admin" style={{ ...s.navLink, color: '#f59e0b', ...(isActive('/admin') ? { opacity: 1 } : {}) }}>
+              Admin
+            </Link>
+          )}
+        </div>
+
+        <div style={s.right}>
+          {user ? (
+            <>
+              <Link to="/cart" style={s.cartBtn}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+                {count > 0 && <span style={s.cartBadge}>{count}</span>}
+              </Link>
+              <div style={s.userChip}>
+                <div style={s.avatar}>{user.name[0].toUpperCase()}</div>
+                <span style={s.userName}>{user.name}</span>
+              </div>
+              <button onClick={handleLogout} style={s.logoutBtn}>Salir</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={s.loginLink}>Iniciar sesión</Link>
+              <Link to="/register" style={s.registerBtn}>Registrarse</Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   )
 }
 
-const styles = {
+const s = {
   nav: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '0 2rem', height: '60px', background: '#1e293b',
     position: 'sticky', top: 0, zIndex: 100,
+    background: 'rgba(8,12,18,0.85)',
+    backdropFilter: 'blur(16px)',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+  },
+  inner: {
+    maxWidth: '1200px', margin: '0 auto',
+    padding: '0 2rem', height: '60px',
+    display: 'flex', alignItems: 'center', gap: '2rem',
   },
   logo: {
-    color: '#f8fafc', fontWeight: '700', fontSize: '1.2rem',
-    textDecoration: 'none', letterSpacing: '0.05em',
+    display: 'flex', alignItems: 'center', gap: '8px',
+    fontWeight: '700', fontSize: '1.05rem', letterSpacing: '-0.02em',
+    color: '#f0f4ff', flexShrink: 0,
   },
-  links: { display: 'flex', alignItems: 'center', gap: '1.25rem' },
-  link: { color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' },
-  badge: {
-    background: '#3b82f6', color: '#fff', borderRadius: '999px',
-    padding: '1px 6px', fontSize: '11px', marginLeft: '4px',
+  logoDot: {
+    width: '8px', height: '8px', borderRadius: '50%',
+    background: '#2f80ff',
+    boxShadow: '0 0 8px #2f80ff',
   },
-  userName: { color: '#cbd5e1', fontSize: '0.85rem' },
-  btn: {
-    background: 'transparent', border: '1px solid #475569', color: '#94a3b8',
-    padding: '4px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem',
+  center: { display: 'flex', alignItems: 'center', gap: '0.25rem', flex: 1 },
+  navLink: {
+    color: '#8b96a8', fontSize: '0.88rem', fontWeight: '500',
+    padding: '6px 12px', borderRadius: '6px',
+    transition: 'color 0.15s, background 0.15s',
+    opacity: 0.8,
   },
-  btnPrimary: {
-    background: '#3b82f6', color: '#fff', padding: '4px 14px',
-    borderRadius: '6px', fontWeight: '500',
+  navLinkActive: { color: '#f0f4ff', background: 'rgba(255,255,255,0.06)', opacity: 1 },
+  right: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' },
+  cartBtn: {
+    position: 'relative', color: '#8b96a8', display: 'flex',
+    padding: '8px', borderRadius: '8px',
+    border: '1px solid rgba(255,255,255,0.07)',
+    background: 'rgba(255,255,255,0.03)',
+    transition: 'border-color 0.15s',
+  },
+  cartBadge: {
+    position: 'absolute', top: '-5px', right: '-5px',
+    background: '#2f80ff', color: '#fff',
+    borderRadius: '99px', fontSize: '10px', fontWeight: '700',
+    minWidth: '17px', height: '17px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '0 4px',
+  },
+  userChip: {
+    display: 'flex', alignItems: 'center', gap: '8px',
+    padding: '4px 10px 4px 4px',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: '99px',
+  },
+  avatar: {
+    width: '26px', height: '26px', borderRadius: '50%',
+    background: '#2f80ff', color: '#fff',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '12px', fontWeight: '700',
+  },
+  userName: { color: '#8b96a8', fontSize: '0.82rem' },
+  logoutBtn: {
+    background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+    color: '#8b96a8', padding: '6px 14px', borderRadius: '6px',
+    fontSize: '0.82rem', transition: 'border-color 0.15s, color 0.15s',
+  },
+  loginLink: { color: '#8b96a8', fontSize: '0.88rem', padding: '6px 12px' },
+  registerBtn: {
+    background: '#2f80ff', color: '#fff',
+    padding: '7px 16px', borderRadius: '7px',
+    fontSize: '0.85rem', fontWeight: '600',
+    boxShadow: '0 0 16px rgba(47,128,255,0.3)',
+    transition: 'background 0.15s',
   },
 }
 

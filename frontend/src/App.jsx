@@ -19,8 +19,7 @@ export default function App() {
           <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f1f5f9' }}>
             <Navbar />
             <Routes>
-              <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />
-              <Route path="/" element={<Home />} />
+              <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/products" element={<Products />} />
