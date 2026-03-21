@@ -10,7 +10,9 @@ app.use(express.json())
 
 app.use('/api/auth', require('./routes/auth.routes'))
 app.use('/api/products', require('./routes/product.routes'))
+app.use('/api/categories', require('./routes/category.routes'))
 app.use('/api/orders', require('./routes/order.routes'))
+app.use('/api/wishlist', require('./routes/wishlist.routes'))
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })

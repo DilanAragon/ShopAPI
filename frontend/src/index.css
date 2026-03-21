@@ -25,6 +25,25 @@
   --shadow:    0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4);
 }
 
+:root[data-theme='light'] {
+  --bg:        #f8fafc;
+  --bg-2:      #ffffff;
+  --bg-3:      #f1f5f9;
+  --bg-4:      #e2e8f0;
+  --border:    rgba(0,0,0,0.08);
+  --border-2:  rgba(0,0,0,0.15);
+  --accent:    #005adb;
+  --accent-2:  #0044ab;
+  --accent-glow: rgba(0,90,219,0.15);
+  --text:      #0f172a;
+  --text-2:    #475569;
+  --text-3:    #64748b;
+  --success:   #059669;
+  --danger:    #dc2626;
+  --warning:   #d97706;
+  --shadow:    0 0 0 1px rgba(0,0,0,0.05), 0 4px 24px rgba(0,0,0,0.08);
+}
+
 html { scroll-behavior: smooth; }
 
 body {

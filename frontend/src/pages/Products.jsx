@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react'
 import { productService } from '../services/product.service'
+import { categoryService } from '../services/category.service'
 import ProductCard from '../components/ProductCard'
 
 const Products = () => {
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState(null)
   const [pagination, setPagination] = useState({})
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
-  const fetchProducts = async (q = search, p = page) => {
+  const fetchProducts = async (q = search, p = page, cat = selectedCategory) => {
     setLoading(true)
     try {
-      const data = await productService.getAll({ page: p, search: q || undefined })
+      const data = await productService.getAll({ page: p, search: q || undefined, categoryId: cat || undefined })
       setProducts(data.data)
       setPagination(data.pagination)
     } catch (err) {
@@ -22,12 +25,30 @@ const Products = () => {
     }
   }
 
-  useEffect(() => { fetchProducts(search, page) }, [page])
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryService.getAll()
+      setCategories(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  useEffect(() => { fetchProducts(search, page, selectedCategory) }, [page, selectedCategory])
 
   const handleSearch = (e) => {
     e.preventDefault()
     setPage(1)
-    fetchProducts(search, 1)
+    fetchProducts(search, 1, selectedCategory)
+  }
+
+  const handleCategorySelect = (categoryId) => {
+    setPage(1)
+    setSelectedCategory(categoryId === selectedCategory ? null : categoryId)
   }
 
   return (
@@ -46,7 +67,7 @@ const Products = () => {
         <form onSubmit={handleSearch} style={s.searchForm}>
           <div style={s.searchWrap}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={s.searchIcon}>
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
             <input
               type="text" placeholder="Buscar productos..."
@@ -58,6 +79,27 @@ const Products = () => {
         </form>
       </div>
 
+      {/* Categorías */}
+      {categories.length > 0 && (
+        <div style={s.categoriesWrap} className="fade-in">
+          <button
+            onClick={() => handleCategorySelect(null)}
+            style={{ ...s.catPill, ...(!selectedCategory ? s.catPillActive : {}) }}
+          >
+            Todos
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => handleCategorySelect(cat.id)}
+              style={{ ...s.catPill, ...(selectedCategory === cat.id ? s.catPillActive : {}) }}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Grid */}
       {loading ? (
         <div style={s.skeletonGrid}>
@@ -68,7 +110,7 @@ const Products = () => {
       ) : products.length === 0 ? (
         <div style={s.empty}>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <p style={s.emptyText}>No se encontraron productos</p>
           {search && (
@@ -125,6 +167,13 @@ const s = {
     color: '#2f80ff', padding: '10px 18px', borderRadius: '9px',
     fontSize: '0.875rem', fontWeight: '600', whiteSpace: 'nowrap',
   },
+  categoriesWrap: { display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', overflowX: 'auto', paddingBottom: '0.5rem' },
+  catPill: {
+    background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8b96a8',
+    padding: '6px 16px', borderRadius: '99px', fontSize: '0.82rem', fontWeight: '500',
+    cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
+  },
+  catPillActive: { background: '#2f80ff', borderColor: '#2f80ff', color: '#fff', boxShadow: '0 0 12px rgba(47,128,255,0.3)' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' },
   skeletonGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' },
   skeleton: {
