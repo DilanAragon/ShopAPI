@@ -9,15 +9,15 @@ COPY package*.json ./
 RUN npm install
 
 COPY prisma ./prisma/
-# Generar cliente prisma
-RUN npx prisma generate
 
 COPY . .
+
+# Generar cliente prisma usando node directamente
+RUN node node_modules/prisma/build/index.js generate
 
 EXPOSE 4000
 
 COPY docker-entrypoint.sh /usr/local/bin/
-# Ya tiene permisos +x localmente, pero por si acaso:
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]

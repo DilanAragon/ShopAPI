@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Pasamos variables de entorno para la fase de build si quisiéramos inyectar otra API,
 # pero Vite lo hornea en los módulos. Pasaremos usando un arg.
-ARG VITE_API_URL=http://localhost:4000/api
+ARG VITE_API_URL=http://alb-shopapi-1749620361.us-east-1.elb.amazonaws.com:8080/api
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY package*.json ./
